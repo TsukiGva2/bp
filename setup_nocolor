@@ -1,10 +1,10 @@
 #!/bin/sh
 
-INFO="\033[36;1m"
-WARN="\033[33;1m"
-ERROR="\033[31;1m"
-PROMPT="\033[37;1m"
-RESET_COLOR="\033[0m"
+INFO=""
+WARN=""
+ERROR=""
+PROMPT=""
+RESET_COLOR=""
 
 function log() {
 
