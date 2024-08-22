@@ -32,3 +32,4 @@ function bp() {
 		exit 1
 	fi
 }
+BGDIR='/home/tortea/Wallpapers/' bp $1

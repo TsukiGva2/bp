@@ -71,13 +71,14 @@ read CUSTOM_DIR
 
 if [ ${CUSTOM_DIR:-n} != "n" ] ; then
 	log "info" "Copying from '$CUSTOM_DIR'"
-	SRCDIR="/home/$CUSTOM_DIR"
+	SRCDIR="$HOME/$CUSTOM_DIR"
 fi
 
 log "info" "Copying all PNG/JPG images in '$SRCDIR' to '$BGDIR'"
-cp "$SRCDIR/*.jpeg" "$BGDIR" 2> /dev/null
-cp "$SRCDIR/*.jpg" "$BGDIR" 2> /dev/null
-cp "$SRCDIR/*.png" "$BGDIR" 2> /dev/null
+
+cp "$SRCDIR"/*.jpeg "$BGDIR" 2> /dev/null
+cp "$SRCDIR"/*.jpg  "$BGDIR" 2> /dev/null
+cp "$SRCDIR"/*.png  "$BGDIR" 2> /dev/null
 
 log "info" 'Checking for `hsetroot`'
 
