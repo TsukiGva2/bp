@@ -1,5 +1,31 @@
 #!/bin/sh
 
+function log() {
+	case $1 in
+	"info")
+		printf "\033[36;1m[INFO]\033[0m    "
+	;;
+	"warn")
+		printf "\033[33;1m[WARN]\033[0m    "
+	;;
+	"error")
+		printf "\033[31;1m[ERROR]\033[0m   "
+	;;
+	*)
+		echo $1
+	;;
+	esac
+
+	shift
+
+	echo "$@"
+}
+
+function prompt() {
+	printf "\033[37;1m[PROMPT]\033[0m  "
+	echo -n "$@"
+}
+
 # refresh ./bp every time
 cp ./bp.in ./bp
 
@@ -8,20 +34,22 @@ if test -z "$BGDIR"; then
 
 fi
 
-echo "[INFO]    Using '$BGDIR' for storing Wallpapers"
+log "info" "Using '$BGDIR' for storing Wallpapers"
 
 if test -e "$BGDIR"; then
-	echo -n "[WARN]    '$BGDIR' exists, use it anyways? [Y/directory] "
+	prompt "'$BGDIR' exists, use it anyways? [Y/directory] "
 	read BP_USE_EXISTS
 
 	if [ ${BP_USE_EXISTS:-y} = "y" ] ; then
-		echo "[INFO]    Ok. keeping default directory."
+		log "info" "Ok. keeping default directory."
 	else
 		BGDIR="$BP_USE_EXISTS"
 	fi
+else
+	mkdir -p "$BGDIR"
 fi
 
-echo "[INFO]    Setting '$BGDIR' as default for \`bp\`"
+log "info" "Setting '$BGDIR' as default for \`bp\`"
 echo "BGDIR='$BGDIR' bp \$1" >> ./bp
 
 # do not override if provided
@@ -29,67 +57,65 @@ if test -z "$BP_PREFIX"; then
 	BP_PREFIX="/usr/local/bin"
 fi
 
-echo "[INFO]    Creating the $BGDIR folder"
-mkdir -p "$BGDIR"
-
 SRCDIR="./bg"
 
-echo -n "[PROMPT]  Copying wallpapers from '$SRCDIR', use custom directory? [Y/directory] "
+prompt "Import images from custom directory? (will assume it's under $HOME) [N/directory] "
 read CUSTOM_DIR
 
-if [ ${CUSTOM_DIR:-y} != "y" ] ; then
-	echo "[INFO]    Copying from '$CUSTOM_DIR'"
-	SRCDIR="$CUSTOM_DIR"
+if [ ${CUSTOM_DIR:-n} != "n" ] ; then
+	log "info" "Copying from '$CUSTOM_DIR'"
+	SRCDIR="/home/$CUSTOM_DIR"
 fi
 
-echo "[INFO]    Copying all files in '$SRCDIR' to '$BGDIR'"
-cp ./bg/* "$BGDIR"
+log "info" "Copying all PNG/JPG images in '$SRCDIR' to '$BGDIR'"
+cp "$SRCDIR/*.jpeg" "$BGDIR" 2> /dev/null
+cp "$SRCDIR/*.jpg" "$BGDIR" 2> /dev/null
+cp "$SRCDIR/*.png" "$BGDIR" 2> /dev/null
 
-echo '[INFO]    Checking for `hsetroot`'
+log "info" 'Checking for `hsetroot`'
 
 HSETROOT=
 
 if ! command -v hsetroot > /dev/null; then
-	echo "[WARN]    Hsetroot not found"
+	log "warn" "Hsetroot not found"
 else
 	HSETROOT=$(command -v hsetroot)
 fi
 
-echo '          Checking for `feh`'
+log "info" 'Checking for `feh`'
 
 if ! command -v feh > /dev/null; then
-	echo "[WARN]    Feh not found"
+	log "warn" "Feh not found"
 
 	if test -z "$HSETROOT"; then
-		echo "[ERROR]   Nor Hsetroot nor Feh where found in your system"
-		echo "          check for their existence in your package manager"
+		log "error" "Nor Hsetroot nor Feh where found in your system" "check for their existence in your package manager"
 
 		exit 1
 	fi
 fi
 
 if ! test -e "$BP_PREFIX"; then
-	echo "[ERROR]   The directory '$BP_PREFIX' doesn't exist!"
+	log "error" "The directory '$BP_PREFIX' doesn't exist!"
 
 	exit 1
 fi
 
-if ! test -z "$(echo $PATH | grep -o \"$BP_PREFIX\")"; then
-	echo "[WARN]    '$BP_PREFIX' is not in path, installing anyway"
+if ! test -z "$(log $PATH | grep -o \"$BP_PREFIX\")"; then
+	log "warn" "'$BP_PREFIX' is not in path, installing anyway"
 fi
 
-echo "[INFO]    Will try to install bp to '$BP_PREFIX', you may be queried for your password."
-echo -n "[PROMPT]  Is that okay? [Y/n] "
+log "info" "Will try to install bp to '$BP_PREFIX', you may be queried for your password."
+prompt "Is that okay? [Y/n] "
 read BPINSTALL
 
 if [ ${BPINSTALL:-y} = "n" ] ; then
-	echo "Understandable."
+	log "Understandable."
 	exit 0
 fi
 
 chmod +x ./bp
 
-echo "[INFO]    Checking permissions for '$BP_PREFIX' directory"
+log "info" "Checking permissions for '$BP_PREFIX' directory"
 
 
 PREFIX_OWNER=$(stat "$BP_PREFIX" -c "%U")
@@ -97,28 +123,28 @@ USERS_PERM=$(stat "$BP_PREFIX" -c "%a" | cut -c 3)
 
 
 if [ "$USER" = "$PREFIX_OWNER" ] || [ $USERS_PERM -ge 6 ] ; then
-	echo "[INFO]    Copying ./bp to '$BP_PREFIX'"
+	log "info" "Copying ./bp to '$BP_PREFIX'"
 	cp ./bp "$BP_PREFIX"
 else
-	echo "[WARN]    No ownership of '$BP_PREFIX', will try \`sudo\`"
-	echo "[INFO]    Copying ./bp to '$BP_PREFIX', \`sudo\` will ask for your password"
+	log "warn" "No ownership of '$BP_PREFIX', will try \`sudo\`"
+	log "info" "Copying ./bp to '$BP_PREFIX', \`sudo\` will ask for your password"
 
 	if ! sudo -k -u "$PREFIX_OWNER" cp ./bp "$BP_PREFIX"; then
-		echo "[ERROR]   \`sudo\` did not finish properly, please re-run the script"
+		log "error" "\`sudo\` did not finish properly, please re-run the script"
 
 		exit 1
 	fi
 fi
 
-echo "[INFO]    Success! Install wallpapers to '$BGDIR' and use \`bp l\` to list."
+log "info" "Success! Install wallpapers to '$BGDIR' and use \`bp l\` to list."
 
 $BP_PREFIX/bp l
 
-echo -n "[PROMPT]  Run \`bp\` with a default wallpaper? [y/N] "
+prompt "Run \`bp\` with a default wallpaper? [y/N] "
 read BPTEST
 
 if [ ${BPTEST:-n} = "n" ] ; then
-	echo "Have fun!"
+	log "Have fun!"
 
 	exit 0
 fi
