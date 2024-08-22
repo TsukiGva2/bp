@@ -1,0 +1,34 @@
+#!/bin/sh
+
+function bp() {
+	if [ "list" = "$1" ] || [ "l" = "$1" ]; then
+
+		printf "\t ________________________________\n"
+		printf "\t| Currently available wallpapers |\n"
+		printf "\t --------------------------------\n"
+		ls -1 $BGDIR | cut -f 1 -d '.' | sed -r 's/^(.*)$/\t|\1/'
+		printf "\t --------------------------------\n"
+
+		exit 0
+	fi
+
+	IMG=$(find $BGDIR -name "$1*" -print | tail -n 1)
+
+	if ! test -z "$IMG" && ! [ "$BGDIR" = "$IMG" ] ; then
+
+		if command -v feh > /dev/null; then
+			feh --bg-scale $IMG
+		elif command -v hsetroot > /dev/null; then
+			hsetroot -extend $IMG
+		else
+			echo "[ERROR]   Can't find Feh/Hsetroot, try running setup first"
+
+			exit 1
+		fi
+
+	else
+		echo "[ERROR]   No matches to provided image: '$1*'"
+
+		exit 1
+	fi
+}
