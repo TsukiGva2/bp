@@ -30,7 +30,7 @@ function log() {
 
 function prompt() {
 	printf "$PROMPT[PROMPT]$RESET_COLOR  "
-	echo -n "$@"
+	printf "%s" "$@"
 }
 
 # refresh ./bp every time
