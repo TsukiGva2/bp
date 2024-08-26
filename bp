@@ -9,7 +9,7 @@ function last_char() {
 
 function bp() {
 
-	if [ "list" = "$1" ] || [ "l" = "$1" ]; then
+	if [ "list" = "$1" ] || [ "l" = "$1" ] || [ "" = "$1" ]; then
 
 		printf "\t ________________________________\n"
 		printf "\t| Currently available wallpapers |\n"
@@ -20,17 +20,22 @@ function bp() {
 		exit 0
 	fi
 
-	IMG=$(find $BGDIR -name "$1*" -print | tail -n 1)
+	IMG=$(find "$BGDIR" -name "$1*" -print | tail -n 1)
 
 	if test -d "$IMG"; then
 
-		printf "\t ___________________________________\n"
-		printf "\t| Available wallpapers in '$IMG' |\n"
-		printf "\t -----------------------------------\n"
-		ls -1 "$IMG" | cut -f 1 -d '.' | sed -r "s/^(.*)\$/\t|\\1/"
-		printf "\t --------------------------------\n"
+		if [ "list" = "$2" ] || [ "l" = "$2" ] || [ "" = "$2" ]; then
+			printf "\t ___________________________________\n"
+			printf "\t| Available wallpapers in '$IMG' |\n"
+			printf "\t -----------------------------------\n"
+			ls -1 "$IMG" | cut -f 1 -d '.' | sed -r "s/^(.*)\$/\t|\\1/"
+			printf "\t --------------------------------\n"
 
-		exit 0
+			exit 1
+		fi
+
+		BGDIR="$IMG"
+		IMG=$(find "$BGDIR" -name "$2*" -print | tail -n 1)
 	fi
 
 	if ! test -z "$IMG" && ! [ "$BGDIR" = "$IMG" ] ; then
@@ -51,4 +56,4 @@ function bp() {
 		exit 1
 	fi
 }
-BGDIR='/home/tortea/Wallpapers/' bp $1
+BGDIR='/home/tortea/Wallpapers/' bp $@

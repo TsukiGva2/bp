@@ -57,7 +57,7 @@ else
 fi
 
 log "info" "Setting '$BGDIR' as default for \`bp\`"
-echo "BGDIR='$BGDIR' bp \$1" >> ./bp
+echo "BGDIR='$BGDIR' bp \$@" >> ./bp
 
 # do not override if provided
 if test -z "$BP_PREFIX"; then
