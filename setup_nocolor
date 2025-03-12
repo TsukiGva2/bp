@@ -66,7 +66,7 @@ fi
 
 SRCDIR="./bg"
 
-prompt "Import images from custom directory? (will assume it's under $HOME) [N/directory] "
+prompt "Import images from custom directory? (will assume it's under $HOME, leave blank for none): "
 read CUSTOM_DIR
 
 if [ ${CUSTOM_DIR:-n} != "n" ] ; then
